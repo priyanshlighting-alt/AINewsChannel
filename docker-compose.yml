@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  # ─── Backend: AI News Channel Engine ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai_news_backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - FRONTEND_URL=${FRONTEND_URL:-*}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - NEWS_API_KEY=${NEWS_API_KEY:-}
+      - YOUTUBE_STREAM_KEY=${YOUTUBE_STREAM_KEY:-}
+      - RTMP_URL=${RTMP_URL:-rtmp://a.rtmp.youtube.com/live2}
+    volumes:
+      - news_videos:/app/videos
+      - news_tmp:/app/tmp
+      - news_assets:/app/assets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  news_videos:
+    name: ai_news_videos
+  news_tmp:
+    name: ai_news_tmp
+  news_assets:
+    name: ai_news_assets
